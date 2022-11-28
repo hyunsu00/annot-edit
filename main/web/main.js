@@ -1,18 +1,19 @@
-const {
-  PDFDocument,
-  PDFName,
-  PDFRef,
-  ParseSpeeds,
-  PDFAnnotation,
-} = require("./build");
-const { AnnotationFactory } = require("annotpdf");
-const fs = require("fs");
+import './lib/pdf-lib.js'
+window.PDFLib = PDFLib;
+window.PDFDocument = PDFLib.PDFDocument;
+window.ParseSpeeds = PDFLib.ParseSpeeds;
+window.PDFName = PDFLib.PDFName;
 
-const PDF_FILE_PATH = "./samples/jspdf_빈문서_한PDF_사각형추가_2개.pdf";
-const SAVE_AS_FILE_PATH =
-  "./outputs/jspdf_빈문서_한PDF_사각형추가_2개_PDFLIB_다른이름저장.pdf";
-const REMOVE_ANNOTS_FILE_PATH =
-  "./outputs/jspdf_빈문서_한PDF_사각형추가_2개_주석삭제.pdf";
+function downloadURL(fileName, data) {
+	var blob = new Blob([data], {type: "application/pdf"});
+	let a = document.createElement('a');
+	a.href = window.URL.createObjectURL(blob);;
+	a.download = fileName;
+	document.body.appendChild(a);
+	a.style = 'display: none';
+	a.click();
+	a.remove();
+};
 
 async function saveAsPDFLib(buffer) {
   const pdfDoc = await PDFDocument.load(buffer, {
@@ -85,37 +86,19 @@ async function removeAnnots(buffer) {
   return pdfBytes;
 }
 
-function addAnnot(pdfBytes) {
-  const writer = new AnnotationFactory(pdfBytes);
-  let ta = writer.createSquareAnnotation({
-    page: 0,
-    rect: [100, 600, 200, 700],
-    contents: "contents",
-    author: "author",
-    updateDate: new Date(2022, 11, 3),
-    creationDate: new Date(2022, 11, 3),
-    id: "id",
-    color: { r: 255, g: 0, b: 0 },
-    fill: { r: 150, g: 200, b: 20 },
-  });
-  ta.createDefaultAppearanceStream();
+async function main() {
+	const PDF_FILE_PATH = './samples/jspdf_빈문서_한PDF_사각형추가_2개.pdf';
+	const SAVE_AS_FILE_NAME = "jspdf_빈문서_한PDF_사각형추가_2개_PDFLIB_다른이름저장.pdf";
+	const REMOVE_ANNOTS_FILE_NAME = "jspdf_빈문서_한PDF_사각형추가_2개_주석삭제.pdf";
 
-  return writer.write();
-}
-
-function main() {
-  console.log("Begin : removeAnnots()");
-
-  const buffer = fs.readFileSync(PDF_FILE_PATH);
-  saveAsPDFLib(buffer).then((pdfBytes) => {
-    fs.writeFileSync(SAVE_AS_FILE_PATH, pdfBytes);
+	const buffer = await fetch(PDF_FILE_PATH).then((res) => res.arrayBuffer());
+	saveAsPDFLib(buffer).then((pdfBytes) => {
+    downloadURL(SAVE_AS_FILE_NAME, pdfBytes);
   });
 
-  removeAnnots(buffer).then((pdfBytes) => {
-    fs.writeFileSync(REMOVE_ANNOTS_FILE_PATH, pdfBytes);
+	removeAnnots(buffer).then((pdfBytes) => {
+    downloadURL(REMOVE_ANNOTS_FILE_NAME, pdfBytes);
   });
-
-  console.log("End : removeAnnots()");
 }
 
 main();
