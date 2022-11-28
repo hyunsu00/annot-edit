@@ -11,7 +11,14 @@
 			"skipFiles": [
 				"<node_internals>/**"
 			],
-			"program": "${workspaceFolder}\\main.js"
+			"program": "${workspaceFolder}\\main\\node\\main.js"
+		},
+		{
+			"name": "webRoot/index.html 디버그",
+			"request": "launch",
+			"type": "pwa-chrome",
+			"url": "http://localhost:8192/index.html",
+			"webRoot": "${workspaceFolder}/src/main/webapp"
 		}
 	]
 }
