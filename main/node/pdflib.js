@@ -53,6 +53,7 @@ async function removeAnnots(buffer) {
         }
         const annotObj = page.node.context.lookup(annotRef);
         if (annotObj) {
+          // /XObject Obj 삭제
           const apObj = annotObj.lookup(PDFName.of("AP"));
           if (apObj) {
             const apRef = apObj.dict.get(PDFName.of("N"));
@@ -62,30 +63,42 @@ async function removeAnnots(buffer) {
           }
         }
 
-        page.node.removeAnnot(annotRef);
+        const Annots = page.node.Annots();
+        if (Annots) {
+          const index = Annots.indexOf(annotRef);
+          if (index !== undefined) {
+            // Page내의 /Annots내의 /Annot 요소 삭제
+            Annots.remove(index);
+          }
+        }
+        
+        // /Annot Obj 삭제
         annots.context.delete(annotRef);
       }
     }
     if (!annots?.size()) {
+      // /Annots Obj 삭제
       page.node.context.delete(annotsRef);
+      // Page내의 /Annots 요소 삭제
+      page.node.delete(PDFName.Annots);
     }
 
     // !!!!! 리소스 삭제
-    const resources = page.node.Resources();
+    // const resources = page.node.Resources();
 
-    console.log(`resources = ${resources}`);
+    // console.log(`resources = ${resources}`);
 
-    if (resources) {
-      const extGStateDictObj = resources.lookup(PDFName.of("ExtGState"));
-      if (extGStateDictObj) {
-        const extGStateRefs = extGStateDictObj.values();
-        for (let i = 0; i < extGStateRefs.length; i++) {
-          const extGStateRef = extGStateRefs[i];
-          annots.context.delete(extGStateRef);
-        }
-      }
-      resources.delete(PDFName.of("ExtGState"));
-    }
+    // if (resources) {
+    //   const extGStateDictObj = resources.lookup(PDFName.of("ExtGState"));
+    //   if (extGStateDictObj) {
+    //     const extGStateRefs = extGStateDictObj.values();
+    //     for (let i = 0; i < extGStateRefs.length; i++) {
+    //       const extGStateRef = extGStateRefs[i];
+    //       annots.context.delete(extGStateRef);
+    //     }
+    //   }
+    //   resources.delete(PDFName.of("ExtGState"));
+    // }
   });
 
   const pdfBytes = await pdfDoc.save({

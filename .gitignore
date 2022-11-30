@@ -106,5 +106,6 @@ dist
 #
 outputs/
 build/
+main/pdf-lib/
 tsBuildInfo.json
 package-lock.json
